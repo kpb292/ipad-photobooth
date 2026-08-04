@@ -19,7 +19,8 @@ const frameSources = {
   '9:16': 'assets/frame-story.png?v=5',
   '16:9': 'assets/frame-wide.png?v=5'
 };
-
+const CLOUDINARY_CLOUD_NAME = 'xfk1ojbe';
+const CLOUDINARY_UPLOAD_PRESET = 'summer-soiree';
 const frameImages = {};
 for (const [ratio, src] of Object.entries(frameSources)) {
   const img = new Image();
@@ -172,7 +173,70 @@ function downloadPhoto() {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+async function uploadPhotoForQr() {
+  if (!state.photoBlob) {
+    throw new Error('No photo is available.');
+  }
 
+  const formData = new FormData();
+  formData.append('file', state.photoBlob, 'rutvi-ronak-summer-soiree.jpg');
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    {
+      method: 'POST',
+      body: formData
+    }
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`Upload failed: ${message}`);
+  }
+
+  const result = await response.json();
+
+  if (!result.secure_url) {
+    throw new Error('Cloudinary did not return a photo URL.');
+  }
+
+  return result.secure_url;
+}
+
+async function showQrCode() {
+  if (!state.photoBlob) return;
+
+  const dialog = $('#qrDialog');
+  const status = $('#qrStatus');
+  const qrContainer = $('#qrcode');
+  const qrButton = $('#qrBtn');
+
+  qrButton.disabled = true;
+  qrContainer.innerHTML = '';
+  status.textContent = 'Uploading your photo…';
+  dialog.showModal();
+
+  try {
+    const photoUrl = await uploadPhotoForQr();
+
+    status.textContent = 'Scan this code with your phone';
+
+    new QRCode(qrContainer, {
+      text: photoUrl,
+      width: 240,
+      height: 240,
+      colorDark: '#24132d',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch (error) {
+    console.error(error);
+    status.textContent = 'Unable to create the QR code. Please use Share or AirDrop.';
+  } finally {
+    qrButton.disabled = false;
+  }
+}
 let logoTaps = 0;
 let tapTimer;
 $('#logoTapTarget').addEventListener('click', (event) => {
@@ -222,10 +286,16 @@ $('#captureBtn').addEventListener('click', countdownAndCapture);
 $('#shareBtn').addEventListener('click', sharePhoto);
 $('#airdropBtn').addEventListener('click', sharePhoto);
 $('#downloadBtn').addEventListener('click', downloadPhoto);
+$('#qrBtn').addEventListener('click', showQrCode);
+
+$('#closeQrBtn').addEventListener('click', () => {
+  $('#qrDialog').close();
+  $('#qrcode').innerHTML = '';
+});
 $('#retakeBtn').addEventListener('click', done);
 $('#retakeTopBtn').addEventListener('click', done);
 $('#doneBtn').addEventListener('click', done);
 
 loadSettings();
 applyRatio(state.ratio);
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=4').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=6').catch(() => {});
