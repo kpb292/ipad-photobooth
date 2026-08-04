@@ -17,8 +17,8 @@ const state = {
 };
 
 const frameSources = {
-  '9:16': 'assets/frame-story.png?v=5',
-  '16:9': 'assets/frame-wide.png?v=5'
+  '9:16': 'assets/frame-story.png?v=6',
+  '16:9': 'assets/frame-wide.png?v=6'
 };
 const CLOUDINARY_CLOUD_NAME = 'xfk1ojbe';
 const CLOUDINARY_UPLOAD_PRESET = 'summer-soiree';
@@ -304,4 +304,4 @@ $('#doneBtn').addEventListener('click', done);
 
 loadSettings();
 applyRatio(state.ratio);
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=6').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=7').catch(() => {});
