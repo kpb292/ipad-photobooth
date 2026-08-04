@@ -1,118 +1,29 @@
-const $ = (id) => document.getElementById(id);
-const state = { stream:null, photoBlob:null, photoDataUrl:null };
-const defaults = {
-  title:'Summer Sunset Party', footer:'Summer 2026 • Smile • Share', ratio:'9:16',
-  framePortrait:'', frameLandscape:''
-};
-let settings = loadSettings();
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => [...document.querySelectorAll(s)];
+const state = { ratio:'9:16', seconds:3, facing:'user', stream:null, photoBlob:null, resetTimer:null, settings:{title:'Summer Sunset Party',defaultRatio:'9:16',resetSeconds:15} };
+const els = {welcome:$('#welcome'),booth:$('#booth'),result:$('#result'),video:$('#video'),cameraShell:$('#cameraShell'),frameCanvas:$('#frameCanvas'),captureCanvas:$('#captureCanvas'),countdown:$('#countdown'),flash:$('#flash'),resultImage:$('#resultImage'),adminDialog:$('#adminDialog')};
 
-function loadSettings(){
-  try { return {...defaults, ...JSON.parse(localStorage.getItem('photoboothSettingsV2') || '{}')}; }
-  catch { return {...defaults}; }
-}
-function saveSettings(){ localStorage.setItem('photoboothSettingsV2', JSON.stringify(settings)); }
-function currentFrame(){ return settings.ratio === '9:16' ? settings.framePortrait : settings.frameLandscape; }
-
-function applySettings(){
-  $('eventTitle').textContent = settings.title;
-  $('footerText').textContent = settings.footer;
-  $('cameraStage').className = `camera-stage ${settings.ratio === '9:16' ? 'ratio-9-16' : 'ratio-16-9'}`;
-  $('portraitBtn').classList.toggle('active', settings.ratio === '9:16');
-  $('landscapeBtn').classList.toggle('active', settings.ratio === '16:9');
-  const frame = currentFrame();
-  $('frameOverlay').src = frame || '';
-  $('frameOverlay').style.display = frame ? 'block' : 'none';
-}
-
-function chooseRatio(ratio){
-  if(state.photoBlob) return;
-  settings.ratio = ratio;
-  saveSettings();
-  applySettings();
-}
-
-async function startCamera(){
-  $('cameraMessage').textContent = 'Starting camera…';
-  try {
-    if (state.stream) state.stream.getTracks().forEach(t=>t.stop());
-    state.stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:'user', width:{ideal:1920}, height:{ideal:1080} }, audio:false
-    });
-    $('video').srcObject = state.stream;
-    await $('video').play();
-    $('cameraMessage').classList.add('hidden');
-    $('captureBtn').disabled = false;
-  } catch (err) {
-    $('cameraMessage').textContent = 'Camera permission is required. Open in Safari over HTTPS and allow camera access.';
-    console.error(err);
-  }
-}
-
-function getTargetSize(){
-  return settings.ratio === '9:16' ? {w:1080,h:1920} : {w:1920,h:1080};
-}
-function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
-async function countdownAndCapture(){
-  $('captureBtn').disabled = true;
-  for(const n of [3,2,1]){ $('countdown').textContent=n; await wait(700); }
-  $('countdown').textContent=''; capturePhoto();
-}
-function coverCrop(sourceW, sourceH, targetW, targetH){
-  const sr=sourceW/sourceH, tr=targetW/targetH;
-  if(sr>tr){ const sw=sourceH*tr; return {sx:(sourceW-sw)/2,sy:0,sw,sh:sourceH}; }
-  const sh=sourceW/tr; return {sx:0,sy:(sourceH-sh)/2,sw:sourceW,sh};
-}
-function capturePhoto(){
-  const v=$('video'), c=$('canvas'), ctx=c.getContext('2d');
-  const {w,h}=getTargetSize(); c.width=w; c.height=h;
-  const crop=coverCrop(v.videoWidth,v.videoHeight,w,h);
-  ctx.save(); ctx.translate(w,0); ctx.scale(-1,1);
-  ctx.drawImage(v,crop.sx,crop.sy,crop.sw,crop.sh,0,0,w,h); ctx.restore();
-  const finish=()=>c.toBlob(blob=>{
-    state.photoBlob=blob; state.photoDataUrl=c.toDataURL('image/jpeg',.92);
-    $('preview').src=state.photoDataUrl;
-    $('cameraStage').classList.add('hidden'); $('capturePanel').classList.add('hidden');
-    document.querySelector('.format-switch').classList.add('hidden'); $('reviewPanel').classList.remove('hidden');
-    $('flash').classList.add('active'); setTimeout(()=>$('flash').classList.remove('active'),450);
-  },'image/jpeg',.92);
-  const frame=currentFrame();
-  if(frame){ const img=new Image(); img.onload=()=>{ctx.drawImage(img,0,0,w,h);finish();}; img.onerror=finish; img.src=frame; }
-  else finish();
-}
-function resetBooth(){
-  state.photoBlob=null; state.photoDataUrl=null;
-  $('reviewPanel').classList.add('hidden'); $('cameraStage').classList.remove('hidden');
-  $('capturePanel').classList.remove('hidden'); document.querySelector('.format-switch').classList.remove('hidden');
-  $('captureBtn').disabled=false;
-}
-function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'photo'; }
-function downloadPhoto(){ const a=document.createElement('a');a.href=state.photoDataUrl;a.download=`${slug(settings.title)}-${Date.now()}.jpg`;a.click(); }
-async function sharePhoto(){
-  if(!state.photoBlob) return;
-  const file=new File([state.photoBlob],`${slug(settings.title)}.jpg`,{type:'image/jpeg'});
-  try { if(navigator.canShare?.({files:[file]})) await navigator.share({title:settings.title,text:'My photo booth picture',files:[file]}); else downloadPhoto(); }
-  catch(err){ if(err.name!=='AbortError') console.error(err); }
-}
-function openAdmin(){
-  const pin=prompt('Enter admin PIN'); if(pin!=='2468') return;
-  $('settingTitle').value=settings.title; $('settingFooter').value=settings.footer; $('settingRatio').value=settings.ratio;
-  $('adminDialog').showModal();
-}
-async function fileToDataUrl(file){ return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);}); }
-$('saveSettingsBtn').addEventListener('click', async (e)=>{
-  e.preventDefault();
-  settings.title=$('settingTitle').value||defaults.title; settings.footer=$('settingFooter').value||defaults.footer; settings.ratio=$('settingRatio').value;
-  const p=$('settingFramePortrait').files[0], l=$('settingFrameLandscape').files[0];
-  if(p) settings.framePortrait=await fileToDataUrl(p); if(l) settings.frameLandscape=await fileToDataUrl(l);
-  saveSettings(); applySettings(); $('adminDialog').close(); resetBooth();
-});
-$('clearPortraitFrameBtn').addEventListener('click',()=>{settings.framePortrait='';saveSettings();applySettings();});
-$('clearLandscapeFrameBtn').addEventListener('click',()=>{settings.frameLandscape='';saveSettings();applySettings();});
-$('resetSettingsBtn').addEventListener('click',()=>{settings={...defaults};saveSettings();applySettings();$('adminDialog').close();resetBooth();});
-$('portraitBtn').addEventListener('click',()=>chooseRatio('9:16'));
-$('landscapeBtn').addEventListener('click',()=>chooseRatio('16:9'));
-$('captureBtn').addEventListener('click',countdownAndCapture);
-$('retakeBtn').addEventListener('click',resetBooth); $('doneBtn').addEventListener('click',resetBooth);
-$('downloadBtn').addEventListener('click',downloadPhoto); $('shareBtn').addEventListener('click',sharePhoto); $('adminBtn').addEventListener('click',openAdmin);
-applySettings(); startCamera();
-if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.error);
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem('sunsetBoothSettings'));if(s) state.settings={...state.settings,...s};}catch{} state.ratio=state.settings.defaultRatio; document.title=state.settings.title;}
+function saveSettings(){localStorage.setItem('sunsetBoothSettings',JSON.stringify(state.settings));}
+function setScreen(name){els.welcome.classList.toggle('hidden',name!=='welcome');els.booth.classList.toggle('hidden',name!=='booth');els.result.classList.toggle('hidden',name!=='result');}
+async function startCamera(){if(state.stream) state.stream.getTracks().forEach(t=>t.stop());try{state.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:state.facing,width:{ideal:1920},height:{ideal:1080}},audio:false});els.video.srcObject=state.stream;await els.video.play();drawFrame();}catch(e){alert('Camera access is required. Open Safari Settings and allow camera access for this site.');}}
+function applyRatio(r){state.ratio=r;$$('.format-btn').forEach(b=>b.classList.toggle('active',b.dataset.ratio===r));els.cameraShell.classList.toggle('ratio-9-16',r==='9:16');els.cameraShell.classList.toggle('ratio-16-9',r==='16:9');requestAnimationFrame(drawFrame);}
+function drawFrame(){const c=els.frameCanvas,rect=els.cameraShell.getBoundingClientRect();if(!rect.width)return;c.width=Math.round(rect.width*2);c.height=Math.round(rect.height*2);const x=c.getContext('2d');const w=c.width,h=c.height;x.clearRect(0,0,w,h);const g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'rgba(255,178,105,.92)');g.addColorStop(.48,'rgba(255,103,111,.18)');g.addColorStop(1,'rgba(104,59,139,.9)');x.strokeStyle=g;x.lineWidth=Math.max(18,w*.025);x.strokeRect(x.lineWidth/2,x.lineWidth/2,w-x.lineWidth,h-x.lineWidth);x.fillStyle='rgba(255,220,155,.92)';x.font=`${Math.round(w*.045)}px Georgia`;x.textAlign='center';x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=12;x.fillText(state.settings.title,w/2,h-Math.max(28,h*.035));x.shadowBlur=0;drawPalm(x,w*.08,h*.12,1);drawPalm(x,w*.92,h*.11,-1);for(let i=0;i<8;i++){x.beginPath();x.fillStyle='rgba(255,240,190,.9)';const px=w*(.12+i*.11),py=h*(.035+Math.sin(i)*.008);x.arc(px,py,Math.max(4,w*.006),0,Math.PI*2);x.fill();}}
+function drawPalm(x,px,py,dir){x.save();x.translate(px,py);x.scale(dir,1);x.strokeStyle='rgba(93,59,47,.75)';x.lineWidth=10;x.beginPath();x.moveTo(0,0);x.quadraticCurveTo(18,80,34,170);x.stroke();x.strokeStyle='rgba(69,99,67,.82)';x.lineWidth=8;for(let i=-3;i<=3;i++){x.save();x.translate(0,10);x.rotate(i*.22);x.beginPath();x.moveTo(0,0);x.quadraticCurveTo(45,-18,92,-2);x.stroke();x.restore();}x.restore();}
+async function countdownAndCapture(){$('#captureBtn').disabled=true;for(let n=state.seconds;n>0;n--){els.countdown.textContent=n;els.countdown.classList.remove('hidden');await new Promise(r=>setTimeout(r,900));}els.countdown.classList.add('hidden');els.flash.classList.remove('on');void els.flash.offsetWidth;els.flash.classList.add('on');await new Promise(r=>setTimeout(r,120));capture();$('#captureBtn').disabled=false;}
+function capture(){const video=els.video;const ratio=state.ratio==='9:16'?9/16:16/9;const outH=state.ratio==='9:16'?1920:1080;const outW=Math.round(outH*ratio);const c=els.captureCanvas;c.width=outW;c.height=outH;const x=c.getContext('2d');const vw=video.videoWidth,vh=video.videoHeight;const target=outW/outH;let sx=0,sy=0,sw=vw,sh=vh;if(vw/vh>target){sw=vh*target;sx=(vw-sw)/2}else{sh=vw/target;sy=(vh-sh)/2}x.save();if(state.facing==='user'){x.translate(outW,0);x.scale(-1,1);}x.drawImage(video,sx,sy,sw,sh,0,0,outW,outH);x.restore();drawOutputFrame(x,outW,outH);c.toBlob(blob=>{state.photoBlob=blob;const url=URL.createObjectURL(blob);els.resultImage.src=url;setScreen('result');scheduleReset();},'image/jpeg',.94);}
+function drawOutputFrame(x,w,h){const g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'#ffbd78');g.addColorStop(.52,'#ff6f78');g.addColorStop(1,'#6a3f8e');x.strokeStyle=g;x.lineWidth=Math.max(28,w*.025);x.strokeRect(x.lineWidth/2,x.lineWidth/2,w-x.lineWidth,h-x.lineWidth);x.fillStyle='rgba(31,16,40,.52)';x.fillRect(0,h*.91,w,h*.09);x.fillStyle='#ffe0a1';x.textAlign='center';x.font=`${Math.round(w*.042)}px Georgia`;x.fillText(state.settings.title,w/2,h*.965);}
+function scheduleReset(){clearTimeout(state.resetTimer);if(state.settings.resetSeconds>0) state.resetTimer=setTimeout(done,state.settings.resetSeconds*1000);}
+function done(){clearTimeout(state.resetTimer);state.photoBlob=null;els.resultImage.removeAttribute('src');setScreen('booth');}
+async function sharePhoto(){if(!state.photoBlob)return;const file=new File([state.photoBlob],'summer-sunset-photo.jpg',{type:'image/jpeg'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:state.settings.title,text:'Photo from the Summer Sunset Party'});}else{downloadPhoto();}}
+function downloadPhoto(){if(!state.photoBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(state.photoBlob);a.download='summer-sunset-photo.jpg';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+let logoTaps=0,tapTimer;$('#logoTapTarget').addEventListener('click',e=>{if(e.target.id==='startBtn')return;logoTaps++;clearTimeout(tapTimer);tapTimer=setTimeout(()=>logoTaps=0,1200);if(logoTaps>=5){logoTaps=0;openAdmin();}});
+function openAdmin(){const pin=prompt('Admin PIN');if(pin!=='2468')return;$('#eventTitleInput').value=state.settings.title;$('#defaultRatioInput').value=state.settings.defaultRatio;$('#resetSecondsInput').value=String(state.settings.resetSeconds);els.adminDialog.showModal();}
+$('#saveAdminBtn').addEventListener('click',()=>{state.settings.title=$('#eventTitleInput').value.trim()||'Summer Sunset Party';state.settings.defaultRatio=$('#defaultRatioInput').value;state.settings.resetSeconds=Number($('#resetSecondsInput').value);saveSettings();applyRatio(state.settings.defaultRatio);drawFrame();});
+$('#startBtn').addEventListener('click',async()=>{setScreen('booth');applyRatio(state.ratio);await startCamera();});
+$('#backBtn').addEventListener('click',()=>setScreen('welcome'));
+$('#cameraFlipBtn').addEventListener('click',async()=>{state.facing=state.facing==='user'?'environment':'user';await startCamera();});
+$$('.format-btn').forEach(b=>b.addEventListener('click',()=>applyRatio(b.dataset.ratio)));
+$$('.timer-btn').forEach(b=>b.addEventListener('click',()=>{state.seconds=Number(b.dataset.seconds);$$('.timer-btn').forEach(x=>x.classList.toggle('active',x===b));}));
+$('#captureBtn').addEventListener('click',countdownAndCapture);$('#shareBtn').addEventListener('click',sharePhoto);$('#downloadBtn').addEventListener('click',downloadPhoto);$('#retakeBtn').addEventListener('click',done);$('#retakeTopBtn').addEventListener('click',done);$('#doneBtn').addEventListener('click',done);
+window.addEventListener('resize',drawFrame);loadSettings();applyRatio(state.ratio);if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
