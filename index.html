@@ -62,12 +62,30 @@
         <button id="shareBtn" class="primary">Share</button>
         <button id="airdropBtn" class="secondary">AirDrop</button>
         <button id="downloadBtn" class="secondary">Download</button>
+        <button id="qrBtn" class="secondary">QR Code</button>
         <button id="retakeBtn" class="secondary">Retake</button>
         <button id="doneBtn" class="secondary">Done</button>
       </div>
       <p class="privacy-note">This image is not uploaded by the photo booth.</p>
     </section>
 
+    <dialog id="qrDialog">
+  <div class="admin-card qr-card">
+    <h3>Scan to get your photo</h3>
+
+    <p id="qrStatus">Preparing your photo…</p>
+
+    <div id="qrcode"></div>
+
+    <p class="privacy-note">
+      This photo is temporarily uploaded for QR sharing.
+    </p>
+
+    <div class="dialog-actions">
+      <button id="closeQrBtn" class="secondary" type="button">Close</button>
+    </div>
+  </div>
+</dialog>
     <dialog id="adminDialog">
       <form method="dialog" class="admin-card">
         <h3>Admin</h3>
@@ -84,6 +102,7 @@
   </main>
 
   <canvas id="captureCanvas" class="hidden"></canvas>
-  <script src="app.js?v=5"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
