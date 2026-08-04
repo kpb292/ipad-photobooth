@@ -14,6 +14,6 @@
     left:50%;
     transform:translateX(-50%);
     bottom:28px;
-    z-index:100;
+    z-index:999;
 }}
 @media(orientation:portrait) and (min-width:700px){.ratio-9-16{height:min(80svh,calc(100svh - 182px));max-width:92vw}.booth{gap:8px}}
