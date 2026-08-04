@@ -16,8 +16,8 @@ const state = {
 };
 
 const frameSources = {
-  '9:16': 'assets/frame-story.png?v=4',
-  '16:9': 'assets/frame-wide.png?v=4'
+  '9:16': 'assets/frame-story.png?v=5',
+  '16:9': 'assets/frame-wide.png?v=5'
 };
 
 const frameImages = {};
@@ -37,7 +37,7 @@ const els = {
 
 function loadSettings() {
   try {
-    const saved = JSON.parse(localStorage.getItem('sunsetBoothSettingsV4'));
+    const saved = JSON.parse(localStorage.getItem('sunsetBoothSettingsV5'));
     if (saved) state.settings = { ...state.settings, ...saved };
   } catch (_) {}
   state.ratio = state.settings.defaultRatio;
@@ -45,7 +45,7 @@ function loadSettings() {
 }
 
 function saveSettings() {
-  localStorage.setItem('sunsetBoothSettingsV4', JSON.stringify(state.settings));
+  localStorage.setItem('sunsetBoothSettingsV5', JSON.stringify(state.settings));
 }
 
 function setScreen(name) {
@@ -98,8 +98,8 @@ async function countdownAndCapture() {
 
 function capture() {
   const video = els.video;
-  const outputWidth = state.ratio === '9:16' ? 1080 : 1920;
-  const outputHeight = state.ratio === '9:16' ? 1920 : 1080;
+  const outputWidth = state.ratio === '9:16' ? 1440 : 2560;
+  const outputHeight = state.ratio === '9:16' ? 2560 : 1440;
   const canvas = els.captureCanvas;
   canvas.width = outputWidth;
   canvas.height = outputHeight;
@@ -136,7 +136,7 @@ function capture() {
     els.resultImage.src = URL.createObjectURL(blob);
     setScreen('result');
     scheduleReset();
-  }, 'image/jpeg', 0.95);
+  }, 'image/jpeg', 1);
 }
 
 function scheduleReset() {
