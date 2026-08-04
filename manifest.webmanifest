@@ -1,9 +1,1 @@
-{
-  "name": "Event Photo Booth",
-  "short_name": "Photo Booth",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
-  "icons": []
-}
+{"name":"Rutvi and Ronak’s Summer Soirée","short_name":"Summer Soirée","start_url":"./","display":"standalone","background_color":"#2b1636","theme_color":"#2b1636","icons":[]}

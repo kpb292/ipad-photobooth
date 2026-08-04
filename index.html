@@ -3,88 +3,90 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#17101d" />
-  <title>Summer Sunset Photo Booth</title>
+  <meta name="theme-color" content="#2b1636" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
+  <title>Rutvi and Ronak’s Summer Soirée</title>
 </head>
 <body>
-  <main id="app" class="app theme-sunset">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">PHOTO BOOTH</p>
-        <h1 id="eventTitle">Rutvi-Ronak’s Summer Soirée</h1>
-      </div>
-      <button id="adminBtn" class="icon-btn" aria-label="Admin settings">⚙︎</button>
-    </header>
-
-    <section class="booth-shell">
-      <div class="format-switch" role="group" aria-label="Photo format">
-        <button id="portraitBtn" class="format-btn active" data-ratio="9:16">📱 Story 9:16</button>
-        <button id="landscapeBtn" class="format-btn" data-ratio="16:9">▭ Landscape 16:9</button>
-      </div>
-
-      <div id="cameraStage" class="camera-stage ratio-9-16">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="canvas" hidden></canvas>
-        <img id="frameOverlay" class="frame-overlay" alt="" />
-        <div id="countdown" class="countdown" aria-live="assertive"></div>
-        <div id="flash" class="flash"></div>
-        <div id="cameraMessage" class="camera-message">Starting camera…</div>
-      </div>
-
-      <div id="capturePanel" class="panel capture-panel">
-        <button id="captureBtn" class="primary-btn" disabled>Take Photo</button>
-        <p class="hint">Choose a format, then tap once for a 3-second countdown.</p>
-      </div>
-
-      <div id="reviewPanel" class="panel review-panel hidden">
-        <img id="preview" class="preview" alt="Your photo" />
-        <div class="action-grid">
-          <button id="retakeBtn" class="secondary-btn">Retake</button>
-          <button id="downloadBtn" class="secondary-btn">Save</button>
-          <button id="shareBtn" class="primary-btn">Share</button>
-        </div>
-        <button id="doneBtn" class="text-btn">Done — reset for next guest</button>
+  <main class="app" id="app">
+    <section class="welcome" id="welcome">
+      <div class="sun"></div>
+      <div class="palm palm-left">🌴</div>
+      <div class="palm palm-right">🌴</div>
+      <div class="welcome-card" id="logoTapTarget">
+        <p class="eyebrow">Golden hour memories</p>
+        <h1>Rutvi and Ronak’s<br><span>Summer Soirée</span></h1>
+        <p>Tap below to start</p>
+        <button id="startBtn" class="primary large">Start Photo Booth</button>
       </div>
     </section>
 
-    <footer><p id="footerText">Summer 2026 • Smile • Share</p></footer>
+    <section class="booth hidden" id="booth">
+      <header>
+        <button id="backBtn" class="icon" aria-label="Back">←</button>
+        <div>
+          <p class="eyebrow">Rutvi and Ronak’s Summer Soirée</p>
+          <h2>Strike a pose</h2>
+        </div>
+        <button id="cameraFlipBtn" class="icon" aria-label="Switch camera">↻</button>
+      </header>
+
+      <div class="controls-row">
+        <div class="segmented" role="group" aria-label="Photo format">
+          <button class="format-btn active" data-ratio="9:16">Story 9:16</button>
+          <button class="format-btn" data-ratio="16:9">Wide 16:9</button>
+        </div>
+        <div class="segmented" role="group" aria-label="Countdown">
+          <button class="timer-btn active" data-seconds="3">3s</button>
+          <button class="timer-btn" data-seconds="5">5s</button>
+          <button class="timer-btn" data-seconds="10">10s</button>
+        </div>
+      </div>
+
+      <div class="camera-shell ratio-9-16" id="cameraShell">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="frameCanvas" aria-hidden="true"></canvas>
+        <div id="countdown" class="countdown hidden"></div>
+        <div id="flash" class="flash"></div>
+      </div>
+
+      <button id="captureBtn" class="shutter" aria-label="Take photo"><span></span></button>
+      <p class="privacy-note">The decorative frame is included in every saved photo.</p>
+    </section>
+
+    <section class="result hidden" id="result">
+      <header>
+        <button id="retakeTopBtn" class="icon" aria-label="Retake">←</button>
+        <div><p class="eyebrow">Photo ready</p><h2>Looks great</h2></div>
+        <div class="icon spacer"></div>
+      </header>
+      <div class="result-wrap"><img id="resultImage" alt="Captured photo" /></div>
+      <div class="result-actions">
+        <button id="shareBtn" class="primary">Share</button>
+        <button id="downloadBtn" class="secondary">Download</button>
+        <button id="retakeBtn" class="secondary">Retake</button>
+        <button id="doneBtn" class="secondary">Done</button>
+      </div>
+      <p class="privacy-note">This image is not uploaded by the photo booth.</p>
+    </section>
+
+    <dialog id="adminDialog">
+      <form method="dialog" class="admin-card">
+        <h3>Admin</h3>
+        <label>Event title<input id="eventTitleInput" maxlength="48" /></label>
+        <label>Default format
+          <select id="defaultRatioInput"><option value="9:16">Story 9:16</option><option value="16:9">Wide 16:9</option></select>
+        </label>
+        <label>Auto-reset after photo
+          <select id="resetSecondsInput"><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="0">Off</option></select>
+        </label>
+        <div class="dialog-actions"><button value="cancel" class="secondary">Cancel</button><button id="saveAdminBtn" value="default" class="primary">Save</button></div>
+      </form>
+    </dialog>
   </main>
 
-  <dialog id="adminDialog">
-    <form method="dialog" class="admin-card" id="adminForm">
-      <div class="dialog-head">
-        <h2>Admin Settings</h2>
-        <button class="icon-btn" value="cancel" aria-label="Close">✕</button>
-      </div>
-      <label>Event title<input id="settingTitle" maxlength="50" /></label>
-      <label>Footer text<input id="settingFooter" maxlength="60" /></label>
-      <label>Default format
-        <select id="settingRatio">
-          <option value="9:16">Story 9:16</option>
-          <option value="16:9">Landscape 16:9</option>
-        </select>
-      </label>
-      <label>9:16 frame PNG
-        <input id="settingFramePortrait" type="file" accept="image/png" />
-        <span class="field-note">Recommended: 1080 × 1920 transparent PNG.</span>
-      </label>
-      <button id="clearPortraitFrameBtn" type="button" class="text-btn">Remove 9:16 frame</button>
-      <label>16:9 frame PNG
-        <input id="settingFrameLandscape" type="file" accept="image/png" />
-        <span class="field-note">Recommended: 1920 × 1080 transparent PNG.</span>
-      </label>
-      <button id="clearLandscapeFrameBtn" type="button" class="text-btn">Remove 16:9 frame</button>
-      <div class="dialog-actions">
-        <button id="resetSettingsBtn" type="button" class="secondary-btn">Reset</button>
-        <button id="saveSettingsBtn" value="default" class="primary-btn">Save</button>
-      </div>
-    </form>
-  </dialog>
-
+  <canvas id="captureCanvas" class="hidden"></canvas>
   <script src="app.js"></script>
 </body>
 </html>
