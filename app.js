@@ -11,7 +11,7 @@ const state = {
   settings: {
     title: 'Rutvi and Ronak’s Summer Soirée',
     defaultRatio: '9:16',
-    resetSeconds: 15
+    resetSeconds: 60
   }
 };
 
@@ -38,7 +38,7 @@ const els = {
 
 function loadSettings() {
   try {
-    const saved = JSON.parse(localStorage.getItem('sunsetBoothSettingsV5'));
+    const saved = JSON.parse(localStorage.getItem('sunsetBoothSettingsV6'));
     if (saved) state.settings = { ...state.settings, ...saved };
   } catch (_) {}
   state.ratio = state.settings.defaultRatio;
@@ -46,7 +46,7 @@ function loadSettings() {
 }
 
 function saveSettings() {
-  localStorage.setItem('sunsetBoothSettingsV5', JSON.stringify(state.settings));
+  localStorage.setItem('sunsetBoothSettingsV6', JSON.stringify(state.settings));
 }
 
 function setScreen(name) {
@@ -283,9 +283,8 @@ $$('.timer-btn').forEach((button) => button.addEventListener('click', () => {
   $$('.timer-btn').forEach((candidate) => candidate.classList.toggle('active', candidate === button));
 }));
 $('#captureBtn').addEventListener('click', countdownAndCapture);
-$('#shareBtn').addEventListener('click', sharePhoto);
+$('#shareBtn').addEventListener('click', sharePhoto);f
 $('#airdropBtn').addEventListener('click', sharePhoto);
-$('#downloadBtn').addEventListener('click', downloadPhoto);
 $('#qrBtn').addEventListener('click', showQrCode);
 
 $('#closeQrBtn').addEventListener('click', () => {
