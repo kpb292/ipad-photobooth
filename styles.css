@@ -68,3 +68,12 @@ legend { font-weight:900; padding:0 6px; }
   .topbar h1 { max-width:70vw; }
   .camera-stage { border-width:5px; border-radius:20px; }
 }
+
+/* Version 2: user-selectable Instagram formats */
+.format-switch{display:flex;gap:.65rem;justify-content:center;margin:0 auto 1rem;max-width:720px}
+.format-btn{flex:1;max-width:290px;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.09);color:inherit;padding:.8rem 1rem;border-radius:999px;font-weight:750;font-size:1rem}
+.format-btn.active{background:rgba(255,255,255,.95);color:#341c3b;box-shadow:0 8px 28px rgba(0,0,0,.22)}
+.camera-stage.ratio-9-16{aspect-ratio:9/16;max-height:68vh;width:auto;max-width:100%;margin-inline:auto}
+.camera-stage.ratio-16-9{aspect-ratio:16/9;width:100%;max-width:980px;margin-inline:auto}
+.theme-sunset{background:linear-gradient(145deg,#2b173c 0%,#7b365d 38%,#d86c65 72%,#f5b36a 100%)}
+@media (max-width:700px){.format-btn{font-size:.9rem;padding:.7rem .55rem}.camera-stage.ratio-9-16{max-height:61vh}}
