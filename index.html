@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#111111" />
+  <title>Event Photo Booth</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app" class="app theme-confetti">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PHOTO BOOTH</p>
+        <h1 id="eventTitle">Celebrate With Us!</h1>
+      </div>
+      <button id="adminBtn" class="icon-btn" aria-label="Admin settings">⚙︎</button>
+    </header>
+
+    <section class="booth-shell">
+      <div id="cameraStage" class="camera-stage">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas" hidden></canvas>
+        <img id="frameOverlay" class="frame-overlay" alt="" />
+        <div id="countdown" class="countdown" aria-live="assertive"></div>
+        <div id="flash" class="flash"></div>
+        <div id="cameraMessage" class="camera-message">Starting camera…</div>
+      </div>
+
+      <div id="capturePanel" class="panel capture-panel">
+        <button id="captureBtn" class="primary-btn" disabled>Take Photo</button>
+        <p class="hint">Tap once. A 3-second countdown will begin.</p>
+      </div>
+
+      <div id="reviewPanel" class="panel review-panel hidden">
+        <img id="preview" class="preview" alt="Your photo" />
+        <div class="action-grid">
+          <button id="retakeBtn" class="secondary-btn">Retake</button>
+          <button id="downloadBtn" class="secondary-btn">Download</button>
+          <button id="shareBtn" class="primary-btn">Share</button>
+        </div>
+
+        <details class="email-card">
+          <summary>Email this photo</summary>
+          <p id="emailStatus" class="hint">Optional: configure EmailJS in Admin Settings.</p>
+          <div class="email-row">
+            <input id="emailInput" type="email" inputmode="email" autocomplete="email" placeholder="guest@example.com" />
+            <button id="emailBtn" class="secondary-btn">Email</button>
+          </div>
+        </details>
+
+        <button id="doneBtn" class="text-btn">Done — reset for next guest</button>
+      </div>
+    </section>
+
+    <footer>
+      <p id="footerText">Tap • Smile • Share</p>
+    </footer>
+  </main>
+
+  <dialog id="adminDialog">
+    <form method="dialog" class="admin-card" id="adminForm">
+      <div class="dialog-head">
+        <h2>Admin Settings</h2>
+        <button class="icon-btn" value="cancel" aria-label="Close">✕</button>
+      </div>
+
+      <label>Event title
+        <input id="settingTitle" maxlength="50" />
+      </label>
+
+      <label>Footer text
+        <input id="settingFooter" maxlength="60" />
+      </label>
+
+      <label>Theme
+        <select id="settingTheme">
+          <option value="confetti">Confetti</option>
+          <option value="elegant">Elegant</option>
+          <option value="neon">Neon</option>
+          <option value="garden">Garden</option>
+        </select>
+      </label>
+
+      <label>Photo format
+        <select id="settingRatio">
+          <option value="4:3">Landscape 4:3</option>
+          <option value="3:4">Portrait 3:4</option>
+          <option value="1:1">Square 1:1</option>
+        </select>
+      </label>
+
+      <label>Custom frame PNG
+        <input id="settingFrame" type="file" accept="image/png" />
+        <span class="field-note">Use a transparent PNG matching the photo ratio.</span>
+      </label>
+
+      <button id="clearFrameBtn" type="button" class="text-btn">Remove custom frame</button>
+
+      <fieldset>
+        <legend>EmailJS (optional free email sending)</legend>
+        <label>Public key <input id="emailPublicKey" autocomplete="off" /></label>
+        <label>Service ID <input id="emailServiceId" autocomplete="off" /></label>
+        <label>Template ID <input id="emailTemplateId" autocomplete="off" /></label>
+        <span class="field-note">Template variables: <code>to_email</code>, <code>event_name</code>, <code>photo_data</code>.</span>
+      </fieldset>
+
+      <div class="dialog-actions">
+        <button id="resetSettingsBtn" type="button" class="secondary-btn">Reset</button>
+        <button id="saveSettingsBtn" value="default" class="primary-btn">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
