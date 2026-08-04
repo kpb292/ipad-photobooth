@@ -1,16 +1,14 @@
-# Summer Sunset Photo Booth v3
+# Rutvi and Ronak’s Summer Soirée Photo Booth — Version 4
 
-Features:
-- Built-in elegant tropical sunset frame
-- Story 9:16 and Wide 16:9 switch on camera screen
-- 3/5/10 second countdown
+This version uses a real transparent PNG overlay in the live preview and composites the same frame into every saved/shared image.
+
+## Included
+- Story 9:16 and Wide 16:9
+- Larger camera area for iPad
+- Decorative frame visible in preview and final image
 - Front/rear camera switch
-- Share Sheet and download
-- Local-only photo processing: the app does not upload captured photos
-- Offline caching after the first successful load
-- Hidden admin: tap the welcome card five times, PIN 2468
+- 3, 5, or 10 second countdown
+- Share and download
+- Offline cache
 
-Privacy note: GitHub Pages hosts the app code publicly. Captured photos are processed in the browser and are not uploaded by this app. Sharing a photo sends it only through the destination selected by the user.
-
-
-Version 3.1: updated event name and improved title contrast.
+Photos are processed locally in the browser and are not uploaded by this app.
