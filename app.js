@@ -220,6 +220,7 @@ $$('.timer-btn').forEach((button) => button.addEventListener('click', () => {
 }));
 $('#captureBtn').addEventListener('click', countdownAndCapture);
 $('#shareBtn').addEventListener('click', sharePhoto);
+$('#airdropBtn').addEventListener('click', sharePhoto);
 $('#downloadBtn').addEventListener('click', downloadPhoto);
 $('#retakeBtn').addEventListener('click', done);
 $('#retakeTopBtn').addEventListener('click', done);
