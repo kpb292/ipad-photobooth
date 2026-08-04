@@ -1,5 +1,6 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
+const CAMERA_ZOOM = 1.12;
 
 const state = {
   ratio: '9:16',
@@ -118,7 +119,13 @@ function capture() {
     sh = videoWidth / targetRatio;
     sy = (videoHeight - sh) / 2;
   }
+const zoomedWidth = sw / CAMERA_ZOOM;
+const zoomedHeight = sh / CAMERA_ZOOM;
 
+sx += (sw - zoomedWidth) / 2;
+sy += (sh - zoomedHeight) / 2;
+sw = zoomedWidth;
+sh = zoomedHeight;
   ctx.save();
   if (state.facing === 'user') {
     ctx.translate(outputWidth, 0);
