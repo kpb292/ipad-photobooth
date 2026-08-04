@@ -11,3 +11,6 @@ Features:
 - Hidden admin: tap the welcome card five times, PIN 2468
 
 Privacy note: GitHub Pages hosts the app code publicly. Captured photos are processed in the browser and are not uploaded by this app. Sharing a photo sends it only through the destination selected by the user.
+
+
+Version 3.1: updated event name and improved title contrast.
