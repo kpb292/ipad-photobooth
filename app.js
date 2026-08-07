@@ -61,14 +61,25 @@ async function startCamera() {
   try {
     state.stream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: state.facing,
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
-      },
+  facingMode: state.facing,
+  width: { ideal: 1280 },
+  height: { ideal: 720 },
+  aspectRatio: { ideal: 16 / 9 }
+},
       audio: false
     });
     els.video.srcObject = state.stream;
     await els.video.play();
+    const track = state.stream.getVideoTracks()[0];
+const capabilities = track.getCapabilities?.();
+
+if (capabilities?.zoom) {
+  try {
+    await track.applyConstraints({
+      advanced: [{ zoom: capabilities.zoom.min }]
+    });
+  } catch (_) {}
+}
   } catch (error) {
     alert('Camera access is required. Allow camera access for this website in Safari Settings.');
   }
