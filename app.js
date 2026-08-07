@@ -86,22 +86,9 @@ async function startCamera() {
     els.video.srcObject = state.stream;
     await els.video.play();
 
-    const track = state.stream.getVideoTracks()[0];
-    const capabilities = track.getCapabilities?.();
-
-    if (capabilities?.zoom) {
-      try {
-        await track.applyConstraints({
-          advanced: [{ zoom: capabilities.zoom.min }]
-        });
-      } catch (_) {}
-    }
-
   } catch (error) {
-    console.error(error);
-    alert(
-      'Camera access is required. Allow camera access for this website in browser settings.'
-    );
+    console.error('Camera error:', error);
+    alert('Camera access is required. Please allow camera access and try again.');
   }
 }
     els.video.srcObject = state.stream;
@@ -123,14 +110,24 @@ if (capabilities?.zoom) {
 
 function applyRatio(ratio) {
   state.ratio = ratio;
- $$('.format-btn').forEach((button) =>
-  button.addEventListener('click', async () => {
-    applyRatio(button.dataset.ratio);
-    await startCamera();
-  })
-);
-  els.cameraShell.classList.toggle('ratio-9-16', ratio === '9:16');
-  els.cameraShell.classList.toggle('ratio-16-9', ratio === '16:9');
+
+  $$('.format-btn').forEach((button) => {
+    button.classList.toggle(
+      'active',
+      button.dataset.ratio === ratio
+    );
+  });
+
+  els.cameraShell.classList.toggle(
+    'ratio-9-16',
+    ratio === '9:16'
+  );
+
+  els.cameraShell.classList.toggle(
+    'ratio-16-9',
+    ratio === '16:9'
+  );
+
   els.frameOverlay.src = frameSources[ratio];
 }
 
@@ -336,7 +333,12 @@ $('#cameraFlipBtn').addEventListener('click', async () => {
   state.facing = state.facing === 'user' ? 'environment' : 'user';
   await startCamera();
 });
-$$('.format-btn').forEach((button) => button.addEventListener('click', () => applyRatio(button.dataset.ratio)));
+$$('.format-btn').forEach((button) => {
+  button.addEventListener('click', async () => {
+    applyRatio(button.dataset.ratio);
+    await startCamera();
+  });
+});
 $$('.timer-btn').forEach((button) => button.addEventListener('click', () => {
   state.seconds = Number(button.dataset.seconds);
   $$('.timer-btn').forEach((candidate) => candidate.classList.toggle('active', candidate === button));
