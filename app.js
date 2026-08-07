@@ -358,4 +358,4 @@ $('#doneBtn').addEventListener('click', done);
 
 loadSettings();
 applyRatio(state.ratio);
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=13').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=14').catch(() => {});
