@@ -8,7 +8,7 @@
     width:min(94vw,1400px);
     height:auto;
     max-height:82svh;
-}}video{
+}video{
     width:100%;
     height:100%;
     object-fit:contain;
