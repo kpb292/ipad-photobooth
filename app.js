@@ -57,17 +57,53 @@ function setScreen(name) {
 }
 
 async function startCamera() {
-  if (state.stream) state.stream.getTracks().forEach((track) => track.stop());
+  if (state.stream) {
+    state.stream.getTracks().forEach((track) => track.stop());
+  }
+
   try {
+    const isWide = state.ratio === '16:9';
+
+    const videoConstraints = isWide
+      ? {
+          facingMode: state.facing,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          aspectRatio: { ideal: 16 / 9 }
+        }
+      : {
+          facingMode: state.facing,
+          width: { ideal: 1080 },
+          height: { ideal: 1920 },
+          aspectRatio: { ideal: 9 / 16 }
+        };
+
     state.stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-  facingMode: state.facing,
-  width: { ideal: 1280 },
-  height: { ideal: 720 },
-  aspectRatio: { ideal: 16 / 9 }
-},
+      video: videoConstraints,
       audio: false
     });
+
+    els.video.srcObject = state.stream;
+    await els.video.play();
+
+    const track = state.stream.getVideoTracks()[0];
+    const capabilities = track.getCapabilities?.();
+
+    if (capabilities?.zoom) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ zoom: capabilities.zoom.min }]
+        });
+      } catch (_) {}
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert(
+      'Camera access is required. Allow camera access for this website in browser settings.'
+    );
+  }
+}
     els.video.srcObject = state.stream;
     await els.video.play();
     const track = state.stream.getVideoTracks()[0];
@@ -87,7 +123,12 @@ if (capabilities?.zoom) {
 
 function applyRatio(ratio) {
   state.ratio = ratio;
-  $$('.format-btn').forEach((button) => button.classList.toggle('active', button.dataset.ratio === ratio));
+ $$('.format-btn').forEach((button) =>
+  button.addEventListener('click', async () => {
+    applyRatio(button.dataset.ratio);
+    await startCamera();
+  })
+);
   els.cameraShell.classList.toggle('ratio-9-16', ratio === '9:16');
   els.cameraShell.classList.toggle('ratio-16-9', ratio === '16:9');
   els.frameOverlay.src = frameSources[ratio];
