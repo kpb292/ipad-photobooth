@@ -17,8 +17,8 @@ const state = {
 };
 
 const frameSources = {
-  '9:16': 'assets/frame-story.png?v=7',
-  '16:9': 'assets/frame-wide.png?v=7'
+  '9:16': 'assets/frame-story.png?v=8',
+  '16:9': 'assets/frame-wide.png?v=8'
 };
 const CLOUDINARY_CLOUD_NAME = 'xfk1ojbe';
 const CLOUDINARY_UPLOAD_PRESET = 'summer-soiree';
